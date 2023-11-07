@@ -1,0 +1,17 @@
+version : '3.8'
+services:
+  iseMongodb:
+    container_name: iseMongodb
+    image: mongo:4.2.6
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - "~/db:/data/db"
+      - "/etc/localtime:/etc/localtime"
+  # isedemo:
+  #   container_name: isedemo
+  #   image: ise:v1
+  #   restart: always
+  #   ports:
+  #     - "7680:7680"
