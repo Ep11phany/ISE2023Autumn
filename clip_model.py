@@ -38,8 +38,6 @@ class CLIPModel():
         feat = self.model.encode_text(text)
         return feat.detach().cpu().numpy()
 
-
-@lru_cache(maxsize=1)
 def get_model() -> CLIPModel:
     config = utils.get_config()
     _time_start = time.time()
