@@ -52,7 +52,7 @@ $ pip install -r requirements.txt
 
 #### 数据放入imgs文件夹，导入数据库
 
-目前不支持文件夹嵌套文件夹，需要将导入照片直接存入`./imgs`文件夹下，之后执行如下命令
+目前不支持文件夹嵌套文件夹，需要将导入照片直接存入`./imgs`文件夹下，之后执行如下命令，目前支持**jpg，png**
 
 ```shell
 $ python import_images.py 
@@ -67,6 +67,8 @@ db.images.find()
 ```
 
 <img src="../assets/01.png" alt="01" style="zoom:50%;" />
+
+需要注意的是，**删除imgs内容时，需要删除data和数据库里对应的数据**
 
 #### 运行server.py
 
