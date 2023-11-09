@@ -4,7 +4,6 @@ import os
 import shutil
 from glob import glob
 from datetime import datetime
-
 from pymongo.collection import Collection
 from tqdm import tqdm
 
@@ -31,7 +30,6 @@ def import_single_image(filename: str, model: clip_model.CLIPModel,
         new_full_path = utils.get_full_path(
             config['import-image-base'], new_basename)
         if os.path.isfile(new_full_path):
-            # print("duplicate file:", filename)
             return
         shutil.copy2(filename, new_full_path)
         stat = os.stat(new_full_path)
@@ -77,4 +75,13 @@ def main():
 
 
 if __name__ == '__main__':
+    isExists=os.path.exists("./data/jpg") #判断路径是否存在，存在则返回true
+    if not isExists:
+        os.makedirs("./data/jpg")
+    isExists=os.path.exists("./data/png") #判断路径是否存在，存在则返回true
+    if not isExists:
+        os.makedirs("./data/png")
+    isExists=os.path.exists("./data/gif") #判断路径是否存在，存在则返回true
+    if not isExists:
+        os.makedirs("./data/gif")
     main()
