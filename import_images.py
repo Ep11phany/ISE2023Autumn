@@ -31,7 +31,7 @@ def import_single_image(filename: str, model: clip_model.CLIPModel,
         new_full_path = utils.get_full_path(
             config['import-image-base'], new_basename)
         if os.path.isfile(new_full_path):
-            print("duplicate file:", filename)
+            # print("duplicate file:", filename)
             return
         shutil.copy2(filename, new_full_path)
         stat = os.stat(new_full_path)

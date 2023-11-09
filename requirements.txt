@@ -1,0 +1,9 @@
+ftfy
+regex
+tqdm
+gradio==3.50.2
+numpy
+torchvision
+torch
+git+https://githubfast.com/openai/CLIP.git
+pymongo
