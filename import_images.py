@@ -24,6 +24,7 @@ def import_single_image(filename: str, model: clip_model.CLIPModel,
         print("skip file:", filename)
         return
     image_feature = image_feature.astype(config['storage-type'])
+    originalpath = filename
     if copy:
         md5hash = utils.calc_md5(filename)
         new_basename = md5hash + '.' + filetype
@@ -44,6 +45,7 @@ def import_single_image(filename: str, model: clip_model.CLIPModel,
     document = {
         'filename': new_full_path,
         'extension': filetype,
+        'originalpath': originalpath,
         'height': image_size[1],
         'width': image_size[0],
         'filesize': stat.st_size,
@@ -54,13 +56,25 @@ def import_single_image(filename: str, model: clip_model.CLIPModel,
     x = mongo_collection.insert_one(document)
     return x
 
+def get_files_and_folders(directory):
+    all_files = []
+    files_and_folders = os.listdir(directory)
+    for item in files_and_folders:
+        item_path = os.path.join(directory, item)
+        if os.path.isfile(item_path):
+            all_files.append(item_path)
+        elif os.path.isdir(item_path):
+            all_files.extend(get_files_and_folders(item_path))
+    return all_files
+
 
 def import_dir(base_dir: str, model: clip_model.CLIPModel,
                config: dict, mongo_collection: Collection, copy=False):
-    list_file = os.listdir(base_dir)
+    # list_file = os.listdir(base_dir)
+    filelist = get_files_and_folders(base_dir)
 
-    filelist = [base_dir+'/'+f for f in list_file]
-    filelist = [f for f in filelist if os.path.isfile(f)]
+    # filelist = [base_dir+'/'+f for f in list_file]
+    # filelist = [f for f in filelist if os.path.isfile(f)]
 
     for filename in tqdm(filelist):
         import_single_image(filename, model, config,
