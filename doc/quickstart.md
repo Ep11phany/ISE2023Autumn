@@ -50,6 +50,10 @@ db.images.find()
 $ pip install -r requirements.txt
 ```
 
+
+
+#### 重要提示：执行import_images.py前记得清除mongodb和./data的数据
+
 #### 数据放入imgs文件夹，导入数据库
 
 目前不支持文件夹嵌套文件夹，需要将导入照片直接存入`./imgs`文件夹下，之后执行如下命令，目前支持**jpg，png**
