@@ -106,7 +106,7 @@ class SearchServer:
 
     def serve(self):
         server = self
-        def _gradio_search_image_1(query, topn, minimum_width, minimum_height, extension_choice):
+        def _gradio_search_image_1(query, topn):
             with torch.no_grad():
                 if isinstance(query, str):
                     target_feature = server.model.get_text_feature(query)
@@ -119,29 +119,25 @@ class SearchServer:
                 else:
                     assert False, "Invalid query (input) type"
 
-            search_options = {
-                "minimum_width": minimum_width,
-                "minimum_height": minimum_height,
-                "extension_choice": extension_choice,
-            }
 
             filename_list, score_list = server.search_nearest_clip_feature(
-                target_feature, topn=int(topn), search_filter_options=search_options)
+                target_feature, topn=int(topn))
 
-            return server.convert_result_to_gradio(filename_list, score_list)
+            # return server.convert_result_to_gradio(filename_list, score_list)
+            return filename_list
 
-        def _gradio_upload(image: Image.Image) -> str:
-            temp_file_path = "/tmp/" + str(uuid.uuid4()) + ".png"
-            image.save(temp_file_path)
+        # def _gradio_upload(image: Image.Image) -> str:
+        #     temp_file_path = "/tmp/" + str(uuid.uuid4()) + ".png"
+        #     image.save(temp_file_path)
 
-            # TODO: resize image to a smaller size if needed
-            x = import_images.import_single_image(
-                temp_file_path, server.mongo_collection, server.config)
-            os.remove(temp_file_path)
-            if x is None:
-                return "file not uploaded"
-            else:
-                return str(x)
+        #     # TODO: resize image to a smaller size if needed
+        #     x = import_images.import_single_image(
+        #         temp_file_path, server.mongo_collection, server.config)
+        #     os.remove(temp_file_path)
+        #     if x is None:
+        #         return "file not uploaded"
+        #     else:
+        #         return str(x)
 
         # build gradio app
         with gr.Blocks() as demo:
@@ -154,26 +150,30 @@ class SearchServer:
                     input_image = gr.Image(label="Image", type="pil")
                     with gr.Row():
                         button_image = gr.Button("Search Image")
-                        button_upload = gr.Button("Upload Image")
+                        # button_upload = gr.Button("Upload Image")
 
             with gr.Accordion("Search options", open=False):
-                extension_choice = gr.CheckboxGroup(
-                    ["jpg", "png", "gif"], label="extension", info="choose extension for search")
+                # extension_choice = gr.CheckboxGroup(
+                #     ["jpg", "png", "gif"], label="extension", info="choose extension for search")
                 with gr.Row():
                     topn = gr.Number(value=16, label="topn")
-                    minimum_width = gr.Number(value=0, label="minimum_width")
-                    minimun_height = gr.Number(value=0, label="minimum_height")
+                    # minimum_width = gr.Number(value=0, label="minimum_width")
+                    # minimun_height = gr.Number(value=0, label="minimum_height")
             # with gr.Accordion("Debug output", open=False):
             #     debug_output = gr.Textbox(lines=1)
 
             gallery = gr.Gallery(columns=4, height=600)
 
-            button_prompt.click(_gradio_search_image_1, inputs=[
-                                prompt_textbox, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
-            button_image.click(_gradio_search_image_1, inputs=[
-                               input_image, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
+            # button_prompt.click(_gradio_search_image_1, inputs=[
+            #                     prompt_textbox, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
+            # button_image.click(_gradio_search_image_1, inputs=[
+            #                    input_image, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
             # button_upload.click(_gradio_upload, inputs=[
             #                     input_image], outputs=[debug_output])
+            button_prompt.click(_gradio_search_image_1, inputs=[
+                                prompt_textbox, topn], outputs=[gallery])
+            button_image.click(_gradio_search_image_1, inputs=[
+                               input_image, topn], outputs=[gallery])
 
         demo.launch(server_name=config['server-host'],
                     server_port=config['server-port'])
