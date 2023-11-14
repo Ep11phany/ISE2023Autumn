@@ -156,7 +156,7 @@ class SearchServer:
                 # extension_choice = gr.CheckboxGroup(
                 #     ["jpg", "png", "gif"], label="extension", info="choose extension for search")
                 with gr.Row():
-                    topn = gr.Number(value=16, label="topn")
+                    topn = gr.Number(value=16, label="number")
                     # minimum_width = gr.Number(value=0, label="minimum_width")
                     # minimun_height = gr.Number(value=0, label="minimum_height")
             # with gr.Accordion("Debug output", open=False):
