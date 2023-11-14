@@ -5,6 +5,7 @@
     "mongodb-collection": "images",
     "server-host": "localhost",
     "server-port": 7980,
+    "test-port": 7981,
     "device": "cpu",
     "storage-type": "float32",
     "clip-model": "ViT-B/32",
