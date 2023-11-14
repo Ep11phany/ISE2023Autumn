@@ -50,8 +50,6 @@ db.images.find()
 $ pip install -r requirements.txt
 ```
 
-
-
 #### 重要提示：执行import_images.py前记得清除mongodb和./data的数据
 
 #### 数据放入imgs文件夹，导入数据库
