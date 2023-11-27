@@ -43,7 +43,6 @@ def get_file_type(image_path):
         return "bmp"
     return None
 
-@lru_cache(maxsize=1)
 def get_mongo_collection() -> Collection:
     config = get_config()
     mongo_client = pymongo.MongoClient(

@@ -61,11 +61,11 @@ class SearchServer:
                 doc["feature"], self.config["storage-type"]))
             filename_list.append(doc["filename"])
 
-            if len(feature_list) >= self._MAX_SPLIT_SIZE:
-                feature_list = np.array(feature_list)
-                sim_score_list.append(cosine_similarity(
-                    query_feature, feature_list))
-                feature_list = []
+            # if len(feature_list) >= self._MAX_SPLIT_SIZE:
+            #     feature_list = np.array(feature_list)
+            #     sim_score_list.append(cosine_similarity(
+            #         query_feature, feature_list))
+            #     feature_list = []
 
         if len(feature_list) > 0:
             feature_list = np.array(feature_list)
@@ -152,7 +152,7 @@ class SearchServer:
                         button_image = gr.Button("Search Image")
                         # button_upload = gr.Button("Upload Image")
 
-            with gr.Accordion("Search options", open=False):
+            with gr.Accordion("Search options", open=True):
                 # extension_choice = gr.CheckboxGroup(
                 #     ["jpg", "png", "gif"], label="extension", info="choose extension for search")
                 with gr.Row():
