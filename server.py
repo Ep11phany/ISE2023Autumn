@@ -117,7 +117,7 @@ class SearchServer:
                         image_input)
                     target_feature = image_feature.cpu().detach().numpy()
                 else:
-                    assert False, "Invalid query (input) type"
+                    assert False, "Invalid query"
 
 
             filename_list, score_list = server.search_nearest_clip_feature(
@@ -141,7 +141,7 @@ class SearchServer:
 
         # build gradio app
         with gr.Blocks() as demo:
-            heading = gr.Markdown("# CLIP Image Search Demo")
+            heading = gr.Markdown("# Image Search")
             with gr.Row(equal_height=True):
                 with gr.Column(scale=1):
                     prompt_textbox = gr.Textbox(lines=8, label="Prompt")
