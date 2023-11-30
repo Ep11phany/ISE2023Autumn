@@ -109,7 +109,8 @@ class SearchServer:
                 target_feature, topn=int(topn))
             sum = 0
             for i in filename_list:
-                if(i.find(testdir)):
+                temp = i.find(testdir)
+                if(temp!=-1):
                     sum = sum + 1
             rate = float(sum)/float(int(topn))
             return str(rate)

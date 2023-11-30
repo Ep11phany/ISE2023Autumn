@@ -126,22 +126,20 @@ class SearchServer:
             # return server.convert_result_to_gradio(filename_list, score_list)
             return filename_list
 
-        # def _gradio_upload(image: Image.Image) -> str:
-        #     temp_file_path = "/tmp/" + str(uuid.uuid4()) + ".png"
-        #     image.save(temp_file_path)
-
-        #     # TODO: resize image to a smaller size if needed
-        #     x = import_images.import_single_image(
-        #         temp_file_path, server.mongo_collection, server.config)
-        #     os.remove(temp_file_path)
-        #     if x is None:
-        #         return "file not uploaded"
-        #     else:
-        #         return str(x)
+        def _gradio_upload(image: Image.Image) -> str:
+            temp_file_path = "./tmp/" + str(uuid.uuid4()) + ".png"
+            image.save(temp_file_path)
+            x = import_images.import_single_image(
+                temp_file_path, server.model, server.config, server.mongo_collection)
+            os.remove(temp_file_path)
+            if x is None:
+                return "file not uploaded"
+            else:
+                return "Success"
 
         # build gradio app
         with gr.Blocks() as demo:
-            heading = gr.Markdown("# Image Search")
+            heading = gr.Markdown("# EmojiSeeker")
             with gr.Row(equal_height=True):
                 with gr.Column(scale=1):
                     prompt_textbox = gr.Textbox(lines=8, label="Prompt")
@@ -150,7 +148,7 @@ class SearchServer:
                     input_image = gr.Image(label="Image", type="pil")
                     with gr.Row():
                         button_image = gr.Button("Search Image")
-                        # button_upload = gr.Button("Upload Image")
+                        button_upload = gr.Button("Upload Image")
 
             with gr.Accordion("Search options", open=True):
                 # extension_choice = gr.CheckboxGroup(
@@ -159,8 +157,8 @@ class SearchServer:
                     topn = gr.Number(value=16, label="number")
                     # minimum_width = gr.Number(value=0, label="minimum_width")
                     # minimun_height = gr.Number(value=0, label="minimum_height")
-            # with gr.Accordion("Debug output", open=False):
-            #     debug_output = gr.Textbox(lines=1)
+            with gr.Accordion("Upload Output", open=True):
+                upload_output = gr.Textbox(lines=1)
 
             gallery = gr.Gallery(columns=4, height=600)
 
@@ -168,8 +166,8 @@ class SearchServer:
             #                     prompt_textbox, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
             # button_image.click(_gradio_search_image_1, inputs=[
             #                    input_image, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
-            # button_upload.click(_gradio_upload, inputs=[
-            #                     input_image], outputs=[debug_output])
+            button_upload.click(_gradio_upload, inputs=[
+                                input_image], outputs=[upload_output])
             button_prompt.click(_gradio_search_image_1, inputs=[
                                 prompt_textbox, topn], outputs=[gallery])
             button_image.click(_gradio_search_image_1, inputs=[
