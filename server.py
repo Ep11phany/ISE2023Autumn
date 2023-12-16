@@ -3,6 +3,7 @@ import os
 import time
 import uuid
 from typing import List, Tuple, Any
+from zipfile import ZipFile
 
 import numpy as np
 import torch
@@ -14,6 +15,10 @@ import utils
 from clip_model import get_model
 import import_images
 
+sumNum = 16
+
+globalFileList = []
+
 
 def cosine_similarity(query_feature, feature_list):
     print("debug", query_feature.shape, feature_list.shape)
@@ -22,9 +27,7 @@ def cosine_similarity(query_feature, feature_list):
     feature_list = feature_list / \
         np.linalg.norm(feature_list, axis=1, keepdims=True)
     sim_score = (query_feature @ feature_list.T)
-
     return sim_score[0]
-
 
 class SearchServer:
     def __init__(self, config):
@@ -107,6 +110,9 @@ class SearchServer:
     def serve(self):
         server = self
         def _gradio_search_image_1(query, topn):
+            global sumNum
+            global globalFileList
+            sumNum = topn
             with torch.no_grad():
                 if isinstance(query, str):
                     target_feature = server.model.get_text_feature(query)
@@ -122,10 +128,46 @@ class SearchServer:
 
             filename_list, score_list = server.search_nearest_clip_feature(
                 target_feature, topn=int(topn))
-
+            globalFileList = filename_list
             # return server.convert_result_to_gradio(filename_list, score_list)
             return filename_list
-
+        
+        def notSatisfyFunc(query):
+            global sumNum
+            global globalFileList
+            if(sumNum<=64):
+                sumNum = sumNum + 8
+            else:
+                return globalFileList
+            topn = sumNum
+            with torch.no_grad():
+                if isinstance(query, str):
+                    target_feature = server.model.get_text_feature(query)
+                elif isinstance(query, Image.Image):
+                    image_input = server.model.preprocess(
+                        query).unsqueeze(0).to(server.model.device)
+                    image_feature = server.model.model.encode_image(
+                        image_input)
+                    target_feature = image_feature.cpu().detach().numpy()
+                else:
+                    assert False, "Invalid query"
+            filename_list, score_list = server.search_nearest_clip_feature(
+                target_feature, topn=int(topn))
+            # return server.convert_result_to_gradio(filename_list, score_list)
+            globalFileList = filename_list
+            return filename_list
+        
+        def zipFiles():
+            global globalFileList
+            if(len(globalFileList)==0):
+                return "List is empty"
+            if(os.path.isfile("./download/Emoji.zip")):     
+                os.remove("./download/Emoji.zip")
+            with ZipFile("./download/Emoji.zip", "w") as zipObj:
+                for item in globalFileList:
+                    zipObj.write(item)
+            return "Download Success"
+        
         def _gradio_upload(image: Image.Image) -> str:
             temp_file_path = "./tmp/" + str(uuid.uuid4()) + ".png"
             image.save(temp_file_path)
@@ -150,17 +192,24 @@ class SearchServer:
                         button_image = gr.Button("Search Image")
                         button_upload = gr.Button("Upload Image")
 
-            with gr.Accordion("Search options", open=True):
+            with gr.Accordion("Search options", open=False):
                 # extension_choice = gr.CheckboxGroup(
                 #     ["jpg", "png", "gif"], label="extension", info="choose extension for search")
                 with gr.Row():
                     topn = gr.Number(value=16, label="number")
                     # minimum_width = gr.Number(value=0, label="minimum_width")
                     # minimun_height = gr.Number(value=0, label="minimum_height")
-            with gr.Accordion("Upload Output", open=True):
+            with gr.Accordion("Output", open=True):
                 upload_output = gr.Textbox(lines=1)
-
+            
+            with gr.Row(equal_height=True):
+                downloadButton = gr.Button("Download")
+            
+            with gr.Row(equal_height=True):
+                notSatisfy = gr.Button("Not Satisfy")
+                
             gallery = gr.Gallery(columns=4, height=600)
+        
 
             # button_prompt.click(_gradio_search_image_1, inputs=[
             #                     prompt_textbox, topn, minimum_width, minimun_height, extension_choice], outputs=[gallery])
@@ -172,6 +221,9 @@ class SearchServer:
                                 prompt_textbox, topn], outputs=[gallery])
             button_image.click(_gradio_search_image_1, inputs=[
                                input_image, topn], outputs=[gallery])
+            notSatisfy.click(notSatisfyFunc, inputs=[
+                               input_image], outputs=[gallery])
+            downloadButton.click(zipFiles, inputs=[], outputs=[upload_output])
 
         demo.launch(server_name=config['server-host'],
                     server_port=config['server-port'])

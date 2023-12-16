@@ -21,6 +21,17 @@ def cosine_similarity(query_feature, feature_list):
     sim_score = (query_feature @ feature_list.T)
     return sim_score[0]
 
+def get_files_and_folders(directory):
+    all_files = []
+    files_and_folders = os.listdir(directory)
+    for item in files_and_folders:
+        item_path = os.path.join(directory, item)
+        if os.path.isfile(item_path):
+            all_files.append(item_path)
+        elif os.path.isdir(item_path):
+            all_files.extend(get_files_and_folders(item_path))
+    return all_files
+
 class SearchServer:
     def __init__(self, config):
         self.config = config
@@ -93,7 +104,9 @@ class SearchServer:
     def serve(self):
         server = self
         def _gradio_search_image(query,testdir):
-            topn="16"
+            testdirReal = "./imgs/"+testdir
+            listLen = len(get_files_and_folders(testdirReal))
+            topn="64"
             with torch.no_grad():
                 if isinstance(query, str):
                     target_feature = server.model.get_text_feature(query)
@@ -112,7 +125,7 @@ class SearchServer:
                 temp = i.find(testdir)
                 if(temp!=-1):
                     sum = sum + 1
-            rate = float(sum)/float(int(topn))
+            rate = float(sum)/float(listLen)
             return str(rate)
         
         with gr.Blocks() as demo:
