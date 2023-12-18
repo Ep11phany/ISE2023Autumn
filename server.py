@@ -17,6 +17,8 @@ import import_images
 
 sumNum = 16
 
+Searchquery=""
+
 globalFileList = []
 
 
@@ -110,8 +112,11 @@ class SearchServer:
     def serve(self):
         server = self
         def _gradio_search_image_1(query, topn):
+            startTime = time.time()
             global sumNum
             global globalFileList
+            global Searchquery
+            Searchquery = query
             sumNum = topn
             with torch.no_grad():
                 if isinstance(query, str):
@@ -125,7 +130,9 @@ class SearchServer:
                 else:
                     assert False, "Invalid query"
 
-
+            endTime = time.time() 
+            finishTime=endTime-startTime
+            print(finishTime)
             filename_list, score_list = server.search_nearest_clip_feature(
                 target_feature, topn=int(topn))
             globalFileList = filename_list
@@ -135,17 +142,18 @@ class SearchServer:
         def notSatisfyFunc(query):
             global sumNum
             global globalFileList
+            global Searchquery
             if(sumNum<=64):
                 sumNum = sumNum + 8
             else:
                 return globalFileList
             topn = sumNum
             with torch.no_grad():
-                if isinstance(query, str):
-                    target_feature = server.model.get_text_feature(query)
-                elif isinstance(query, Image.Image):
+                if isinstance(Searchquery, str):
+                    target_feature = server.model.get_text_feature(Searchquery)
+                elif isinstance(Searchquery, Image.Image):
                     image_input = server.model.preprocess(
-                        query).unsqueeze(0).to(server.model.device)
+                        Searchquery).unsqueeze(0).to(server.model.device)
                     image_feature = server.model.model.encode_image(
                         image_input)
                     target_feature = image_feature.cpu().detach().numpy()

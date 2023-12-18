@@ -9,9 +9,3 @@ services:
     volumes:
       - "~/db:/data/db"
       - "/etc/localtime:/etc/localtime"
-  # isedemo:
-  #   container_name: isedemo
-  #   image: ise:v1
-  #   restart: always
-  #   ports:
-  #     - "7680:7680"

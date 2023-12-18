@@ -11,6 +11,7 @@ from PIL import Image
 import utils
 from clip_model import get_model
 import import_images
+import time
 
 def cosine_similarity(query_feature, feature_list):
     print("debug", query_feature.shape, feature_list.shape)
@@ -104,6 +105,7 @@ class SearchServer:
     def serve(self):
         server = self
         def _gradio_search_image(query,testdir):
+            startTime = time.time()
             testdirReal = "./imgs/"+testdir
             listLen = len(get_files_and_folders(testdirReal))
             topn="64"
@@ -126,7 +128,10 @@ class SearchServer:
                 if(temp!=-1):
                     sum = sum + 1
             rate = float(sum)/float(listLen)
-            return str(rate)
+            endTime = time.time() 
+            finishTime=endTime-startTime
+            return str(rate), str(finishTime)
+
         
         with gr.Blocks() as demo:
             with gr.Row():
@@ -138,8 +143,12 @@ class SearchServer:
                     with gr.Row():
                         button_image = gr.Button("Test")
                 with gr.Column():
-                    test = gr.Textbox(label="Test")
-                button_image.click(_gradio_search_image, inputs=[input_image,testdir], outputs=[test])
+                    with gr.Row():
+                        recallRate = gr.Textbox(label="Recall Rate")
+                    with gr.Row():
+                        timeTest = gr.Textbox(label="Time(s)")
+                button_image.click(_gradio_search_image, inputs=[input_image,testdir], 
+                                   outputs=[recallRate,timeTest])
         demo.launch(server_name=config['server-host'],
                     server_port=config['test-port'])
 
